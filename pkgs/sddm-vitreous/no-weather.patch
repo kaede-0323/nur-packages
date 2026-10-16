@@ -1,0 +1,59 @@
+diff --git a/Components/Clock.qml b/Components/Clock.qml
+index 9caec50..fa12255 100644
+--- a/Components/Clock.qml
++++ b/Components/Clock.qml
+@@ -38,25 +38,6 @@ Column {
+         }
+     }
+ 
+-    // Weather holder (hidden)
+-    Text {
+-        id: weatherLabel
+-        visible: false
+-        text: ""
+-    }
+-
+-    function fetchWeather() {
+-        var xhr = new XMLHttpRequest();
+-        xhr.open("GET", "file:///run/sddm-weather.txt?t=" + Date.now());
+-        xhr.onreadystatechange = function () {
+-            if (xhr.readyState === XMLHttpRequest.DONE) {
+-                weatherLabel.text = (xhr.responseText || "").trim();
+-                dateLabel.updateTime();
+-            }
+-        };
+-        xhr.send();
+-    }
+-
+     Label {
+         id: dateLabel
+         anchors.horizontalCenter: parent.horizontalCenter
+@@ -67,9 +48,7 @@ Column {
+         renderType: Text.QtRendering
+ 
+         function updateTime() {
+-            var dateString = new Date().toLocaleDateString(Qt.locale(config.Locale), config.DateFormat == "short" ? Locale.ShortFormat : (config.DateFormat !== "" ? config.DateFormat : Locale.LongFormat));
+-            var w = weatherLabel.text;
+-            text = (w && w.length) ? (dateString + "  •  " + w) : dateString;
++            text = new Date().toLocaleDateString(Qt.locale(config.Locale), config.DateFormat == "short" ? Locale.ShortFormat : (config.DateFormat !== "" ? config.DateFormat : Locale.LongFormat));
+         }
+     }
+ 
+@@ -83,17 +62,7 @@ Column {
+         }
+     }
+ 
+-    // fetch weather every 10 min AND once immediately
+-    Timer {
+-        interval: 10 * 60 * 1000
+-        repeat: true
+-        running: true
+-        triggeredOnStart: true   // fire right away
+-        onTriggered: fetchWeather()
+-    }
+-
+     Component.onCompleted: {
+-        fetchWeather();
+         dateLabel.updateTime();
+         timeLabel.updateTime();
+     }

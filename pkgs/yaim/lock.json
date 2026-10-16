@@ -1,0 +1,28 @@
+{
+  "depends": [
+    {
+      "method": "fetchzip",
+      "path": "/nix/store/d32i99vgq2ra2x1dp1izbdph9xhl7343-7230cdf19f8acfe3c310e1b5bd29787685173bf5.tar.gz",
+      "ref": "v0.3.6",
+      "rev": "7230cdf19f8acfe3c310e1b5bd29787685173bf5",
+      "sha256": "1j3jk1jcj96fmxajsbjq67awv6an5mifz93qfkrw7anljji2l5m4",
+      "url": "https://github.com/jangko/nimPNG/archive/7230cdf19f8acfe3c310e1b5bd29787685173bf5.tar.gz",
+      "packages": [
+        "nimPNG"
+      ],
+      "srcDir": ""
+    },
+    {
+      "method": "fetchzip",
+      "path": "/nix/store/3hdma7nk8z3vnbxhv672nqxdcjp0rmib-29aca5e519ebf5d833f63a6a2769e62ec7bfb83a.tar.gz",
+      "ref": "1.2",
+      "rev": "29aca5e519ebf5d833f63a6a2769e62ec7bfb83a",
+      "sha256": "16npqgmi2qawjxaddj9ax15rfpdc7sqc37i2r5vg23lyr6znq4wc",
+      "url": "https://github.com/nim-lang/x11/archive/29aca5e519ebf5d833f63a6a2769e62ec7bfb83a.tar.gz",
+      "packages": [
+        "x11"
+      ],
+      "srcDir": ""
+    }
+  ]
+}

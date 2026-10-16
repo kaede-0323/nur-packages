@@ -1,0 +1,22 @@
+diff --git a/Components/Clock.qml b/Components/Clock.qml
+index fa12255..bc74837 100644
+--- a/Components/Clock.qml
++++ b/Components/Clock.qml
+@@ -29,7 +29,7 @@ Column {
+ 
+         font.pointSize: root.font.pointSize * 9
+         font.bold: true
+-        font.family: "PP Neue Machina"
++        font.family: config.TimeFont ? config.TimeFont : "PP Neue Machina"
+         color: config.TimeTextColor
+         renderType: Text.QtRendering
+ 
+@@ -43,7 +43,7 @@ Column {
+         anchors.horizontalCenter: parent.horizontalCenter
+         color: config.DateTextColor
+         font.pointSize: root.font.pointSize * 1.5
+-        font.family: "LondonBetween"
++        font.family: config.DateFont ? config.DateFont : "LondonBetween"
+         font.weight: 1000
+         renderType: Text.QtRendering
+ 
