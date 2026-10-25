@@ -4,81 +4,34 @@
   pkgs,
   ...
 }: let
-  yaml = import ./lib-yaml.nix {inherit lib;};
-  tmuxinatorConfig = config.tmuxinator or {};
-  sessions = tmuxinatorConfig.sessions or {};
+  cfg = config.tmuxinator;
+  tmuxinatorOptions = import ./options.nix {inherit lib;};
+  yaml = import ./lib-yaml.nix {inherit lib pkgs;};
 in {
-  options.tmuxinator.sessions = lib.mkOption {
-    type = lib.types.attrsOf (lib.types.submodule {
-      options = {
-        root = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          default = null;
-        };
-        env = lib.mkOption {
-          type = lib.types.nullOr (lib.types.attrsOf lib.types.str);
-          default = null;
-        };
-        pre = lib.mkOption {
-          type = lib.types.nullOr (lib.types.listOf lib.types.str);
-          default = null;
-        };
-        post = lib.mkOption {
-          type = lib.types.nullOr (lib.types.listOf lib.types.str);
-          default = null;
-        };
-        tmuxOptions = lib.mkOption {
-          type = lib.types.nullOr (lib.types.listOf lib.types.str);
-          default = null;
-        };
-        windows = lib.mkOption {
-          type = lib.types.attrsOf (lib.types.submodule {
-            options = {
-              layout = lib.mkOption {
-                type = lib.types.nullOr lib.types.str;
-                default = null;
-              };
-              root = lib.mkOption {
-                type = lib.types.nullOr lib.types.str;
-                default = null;
-              };
-              focus = lib.mkOption {
-                type = lib.types.nullOr lib.types.bool;
-                default = null;
-              };
-              shell = lib.mkOption {
-                type = lib.types.nullOr lib.types.str;
-                default = null;
-              };
-              pre = lib.mkOption {
-                type = lib.types.nullOr (lib.types.listOf lib.types.str);
-                default = null;
-              };
-              post = lib.mkOption {
-                type = lib.types.nullOr (lib.types.listOf lib.types.str);
-                default = null;
-              };
-              panes = lib.mkOption {
-                type = lib.types.nullOr (lib.types.listOf (lib.types.attrsOf (lib.types.nullOr lib.types.str)));
-                default = null;
-              };
-            };
-          });
-          default = {};
-        };
-      };
-    });
-    default = {};
+  options.tmuxinator = {
+    package = lib.mkOption {
+      type = lib.types.package;
+      default = pkgs.callPackage ../../pkgs/tmuxinator {};
+      defaultText = lib.literalExpression "nur.repos.kaede-0323.tmuxinator";
+      description = "tmuxinator package to install.";
+    };
+
+    sessions = lib.mkOption {
+      type = lib.types.attrsOf tmuxinatorOptions.sessionType;
+      default = {};
+      description = "tmuxinator projects written to /etc/tmuxinator, keyed by project name.";
+    };
   };
 
   config = {
-    environment.systemPackages = lib.mkAfter [pkgs.tmuxinator];
-    environment.etc = builtins.listToAttrs (
-      lib.mapAttrsToList (sessionName: sessionAttrs: {
-        name = "tmuxinator/${sessionName}.yml";
-        value.text = yaml.generateSessionYaml sessionName sessionAttrs;
+    assertions = tmuxinatorOptions.removedOptionAssertions "tmuxinator.sessions" cfg.sessions;
+    environment.systemPackages = lib.mkAfter [cfg.package];
+    environment.etc = lib.mapAttrs' (name: session:
+      lib.nameValuePair "tmuxinator/${name}.yml" {
+        source = yaml.generateSessionYaml name session;
       })
-      sessions
-    );
+    cfg.sessions;
+    # tmuxinator does not search /etc, so point it there explicitly.
+    environment.variables.TMUXINATOR_CONFIG = lib.mkIf (cfg.sessions != {}) "/etc/tmuxinator";
   };
 }

@@ -10,6 +10,7 @@
   jkgo-font = pkgs.callPackage ./pkgs/jkgo-font {};
   raddebugger = pkgs.callPackage ./pkgs/raddebugger {};
   sddm-vitreous = pkgs.callPackage ./pkgs/sddm-vitreous {};
+  tmuxinator = pkgs.callPackage ./pkgs/tmuxinator {};
   yaim = pkgs.callPackage ./pkgs/yaim {};
   zhist = pkgs.callPackage ./pkgs/zhist {};
 }

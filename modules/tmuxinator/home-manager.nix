@@ -4,7 +4,9 @@
   pkgs,
   ...
 }: let
-  yaml = import ./lib-yaml.nix {inherit lib;};
+  cfg = config.programs.tmuxinator;
+  tmuxinatorOptions = import ./options.nix {inherit lib;};
+  yaml = import ./lib-yaml.nix {inherit lib pkgs;};
 in {
   options.programs.tmuxinator = {
     enable = lib.mkOption {
@@ -13,101 +15,27 @@ in {
       description = "Enable tmuxinator support in Home-manager";
     };
 
+    package = lib.mkOption {
+      type = lib.types.package;
+      default = pkgs.callPackage ../../pkgs/tmuxinator {};
+      defaultText = lib.literalExpression "nur.repos.kaede-0323.tmuxinator";
+      description = "tmuxinator package to install.";
+    };
+
     sessions = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.submodule {
-        options = {
-          root = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-          };
-          env = lib.mkOption {
-            type = lib.types.nullOr (lib.types.listOf (lib.types.submodule {
-              options = {
-                name = lib.mkOption {
-                  type = lib.types.str;
-                };
-                value = lib.mkOption {
-                  type = lib.types.str;
-                };
-              };
-            }));
-            default = null;
-          };
-          pre = lib.mkOption {
-            type = lib.types.nullOr (lib.types.listOf lib.types.str);
-            default = null;
-          };
-          post = lib.mkOption {
-            type = lib.types.nullOr (lib.types.listOf lib.types.str);
-            default = null;
-          };
-          tmuxOptions = lib.mkOption {
-            type = lib.types.nullOr (lib.types.listOf lib.types.str);
-            default = null;
-          };
-          windows = lib.mkOption {
-            type = lib.types.listOf (lib.types.submodule {
-              options = {
-                name = lib.mkOption {
-                  type = lib.types.str;
-                };
-                layout = lib.mkOption {
-                  type = lib.types.nullOr lib.types.str;
-                  default = null;
-                };
-                root = lib.mkOption {
-                  type = lib.types.nullOr lib.types.str;
-                  default = null;
-                };
-                focus = lib.mkOption {
-                  type = lib.types.nullOr lib.types.bool;
-                  default = null;
-                };
-                shell = lib.mkOption {
-                  type = lib.types.nullOr lib.types.str;
-                  default = null;
-                };
-                pre = lib.mkOption {
-                  type = lib.types.nullOr (lib.types.listOf lib.types.str);
-                  default = null;
-                };
-                post = lib.mkOption {
-                  type = lib.types.nullOr (lib.types.listOf lib.types.str);
-                  default = null;
-                };
-                panes = lib.mkOption {
-                  type = lib.types.nullOr (lib.types.listOf (lib.types.submodule {
-                    options = {
-                      command = lib.mkOption {
-                        type = lib.types.nullOr lib.types.str;
-                        default = null;
-                      };
-                      shell = lib.mkOption {
-                        type = lib.types.nullOr lib.types.str;
-                        default = null;
-                      };
-                    };
-                  }));
-                  default = null;
-                };
-              };
-            });
-            default = [];
-          };
-        };
-      });
+      type = lib.types.attrsOf tmuxinatorOptions.sessionType;
       default = {};
+      description = "tmuxinator projects written to ~/.tmuxinator, keyed by project name.";
     };
   };
 
-  config = lib.mkIf config.programs.tmuxinator.enable {
-    home.packages = lib.mkAfter [pkgs.tmuxinator];
-    home.file = builtins.listToAttrs (
-      lib.mapAttrsToList (sessionName: sessionAttrs: {
-        name = ".tmuxinator/${sessionName}.yml";
-        value.text = yaml.generateSessionYaml sessionName sessionAttrs;
+  config = lib.mkIf cfg.enable {
+    assertions = tmuxinatorOptions.removedOptionAssertions "programs.tmuxinator.sessions" cfg.sessions;
+    home.packages = lib.mkAfter [cfg.package];
+    home.file = lib.mapAttrs' (name: session:
+      lib.nameValuePair ".tmuxinator/${name}.yml" {
+        source = yaml.generateSessionYaml name session;
       })
-      config.programs.tmuxinator.sessions
-    );
+    cfg.sessions;
   };
 }
