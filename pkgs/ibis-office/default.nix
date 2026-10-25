@@ -1,6 +1,7 @@
 {
   lib,
   rustPlatform,
+  rustc,
   fetchFromGitHub,
   pkg-config,
   makeWrapper,
@@ -107,5 +108,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     license = lib.licenses.agpl3Only;
     mainProgram = "ibisOffice";
     platforms = lib.platforms.linux;
+    # map_or_default は Rust 1.98 で安定化された
+    broken = lib.versionOlder rustc.version "1.98";
   };
 })
